@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.433">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>WikiLetters miniproject</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="wikiletters_files/libs/clipboard/clipboard.min.js"></script>
+<script src="wikiletters_files/libs/quarto-html/quarto.js"></script>
+<script src="wikiletters_files/libs/quarto-html/popper.min.js"></script>
+<script src="wikiletters_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="wikiletters_files/libs/quarto-html/anchor.min.js"></script>
+<link href="wikiletters_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="wikiletters_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="wikiletters_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="wikiletters_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="wikiletters_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script>
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+
+</head>
+
+<body class="fullcontent">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">WikiLetters miniproject</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+</header>
+
+<p>Inspired by <a href="https://twitter.com/anniierau/status/1677769248159014912">this tweet</a>, I took a look at the traffic patterns towards English Wikipedia articles about letters of the alphabet.</p>
+<p>Some strange, as yet unexplained, patterns observed… I welcome any suggested explanations!</p>
+<p>Data comes from the <a href="https://meta.wikimedia.org/wiki/Research:Wikipedia_clickstream">Wikipedia clickstream dataset</a>. This is used to understand where page views come from. Some more detail on the external sources and higher granularity would be nice but unfortunately that is not available. Strictly speaking not 100% of an article’s page views are included here due to an edge weight threshold (see details in link), but it’s close enough.</p>
+<p><img src="figures/tweet.png" title="aztweet" class="img-fluid"></p>
+<section id="quick-primer-on-network-data" class="level4">
+<h4 class="anchored" data-anchor-id="quick-primer-on-network-data">Quick primer on network data</h4>
+<p>The clickstream data for each month forms a network. Each entry represents an ‘edge’ in the network, detailing where traffic comes from (the source), where it goes to (the target), and how many times it has been visited (the weight / “n”). The source and target are both ‘nodes’ in the network. The source is the page that a user was on before they navigasted to the target page (e.g.&nbsp;through a link on the source page). The weight is the number of times in a month that all users traversed from a specific source page to a specifc target page.</p>
+<p>This network is <em>directed</em> (meaning each edge has a direction, from source to target), and <em>weighted</em> (meaning each edge has a weight, the number of times that edge was traversed).</p>
+<p>Most of the entries in the clickstream data represent the number of times in one month that users have clicked a link on some source article towards some target article. However there is also data on traffic from sources external to Wikipedia which we make use of. See the link above for more details.</p>
+</section>
+<section id="downloading-reading-clickstream-data" class="level4">
+<h4 class="anchored" data-anchor-id="downloading-reading-clickstream-data">Downloading &amp; reading clickstream data</h4>
+<p>First run of this can take a little while, but data is saved for future speedier use.</p>
+<div class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># import functions from wikiletters.py</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> wikiletters <span class="im">import</span> <span class="op">*</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>fp <span class="op">=</span> <span class="st">''</span> <span class="co"># enter path to folder with clickstream data here</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>savepath <span class="op">=</span> <span class="st">'data'</span> <span class="co"># enter path to folder to save output to here</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>startm <span class="op">=</span> <span class="st">'2021-07-01'</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>endm <span class="op">=</span> <span class="st">'2023-06-01'</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>months <span class="op">=</span> pd.date_range(startm, endm, freq<span class="op">=</span><span class="st">'MS'</span>)</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>split <span class="op">=</span> months[<span class="bu">len</span>(months)<span class="op">//</span><span class="dv">2</span>] <span class="co"># get point to split data in half for comparison</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="co"># check if data has already been downloaded and processed</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> (os.path.exists(<span class="st">'</span><span class="sc">%s</span><span class="st">/az_clickstream_</span><span class="sc">%s</span><span class="st">_</span><span class="sc">%s</span><span class="st">.csv'</span> <span class="op">%</span>(savepath, startm , endm))<span class="op">&amp;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    os.path.exists(<span class="st">'</span><span class="sc">%s</span><span class="st">/agg_clickstream_</span><span class="sc">%s</span><span class="st">_</span><span class="sc">%s</span><span class="st">.csv'</span> <span class="op">%</span>(savepath, startm , endm))):</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    dft <span class="op">=</span> pd.read_csv(<span class="st">'</span><span class="sc">%s</span><span class="st">/az_clickstream_</span><span class="sc">%s</span><span class="st">_</span><span class="sc">%s</span><span class="st">.csv'</span> <span class="op">%</span>(savepath, startm , endm),</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>                      index_col<span class="op">=</span><span class="dv">0</span>, parse_dates<span class="op">=</span>[<span class="st">'month'</span>])</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    dfg <span class="op">=</span> pd.read_csv(<span class="st">'</span><span class="sc">%s</span><span class="st">/agg_clickstream_</span><span class="sc">%s</span><span class="st">_</span><span class="sc">%s</span><span class="st">.csv'</span> <span class="op">%</span>(savepath, startm , endm),</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                      index_col<span class="op">=</span><span class="dv">0</span>, parse_dates<span class="op">=</span>[<span class="dv">0</span>])</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span>: <span class="co"># if not, download, process, and save data</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    download_clickstream(startm, endm, fp)</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    dft, dfg <span class="op">=</span> get_abc_clickstream(startm, endm, fp)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    dft.to_csv(<span class="st">'</span><span class="sc">%s</span><span class="st">/az_clickstream_</span><span class="sc">%s</span><span class="st">_</span><span class="sc">%s</span><span class="st">.csv'</span> <span class="op">%</span>(savepath, startm , endm))</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    dfg.to_csv(<span class="st">'</span><span class="sc">%s</span><span class="st">/agg_clickstream_</span><span class="sc">%s</span><span class="st">_</span><span class="sc">%s</span><span class="st">.csv'</span> <span class="op">%</span>(savepath, startm , endm))</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>display(dft.head()) <span class="co"># all edges to letters of the alphabet</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>display(dfg.head()) <span class="co"># aggregated data across all articles for different sources</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">source</th>
+<th data-quarto-table-cell-role="th">target</th>
+<th data-quarto-table-cell-role="th">type</th>
+<th data-quarto-table-cell-role="th">n</th>
+<th data-quarto-table-cell-role="th">type2</th>
+<th data-quarto-table-cell-role="th">month</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">386</td>
+<td>other-search</td>
+<td>A</td>
+<td>external</td>
+<td>83284</td>
+<td>Search Engines</td>
+<td>2021-07-01</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">404</td>
+<td>other-empty</td>
+<td>A</td>
+<td>external</td>
+<td>64369</td>
+<td>No Record</td>
+<td>2021-07-01</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">444</td>
+<td>other-internal</td>
+<td>A</td>
+<td>external</td>
+<td>6314</td>
+<td>Wikimedia</td>
+<td>2021-07-01</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">388</td>
+<td>other-external</td>
+<td>A</td>
+<td>external</td>
+<td>1278</td>
+<td>Rest of the Web</td>
+<td>2021-07-01</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">442</td>
+<td>Main_Page</td>
+<td>A</td>
+<td>other</td>
+<td>1117</td>
+<td>Wikipedia Other</td>
+<td>2021-07-01</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">Search Engines</th>
+<th data-quarto-table-cell-role="th">Rest of the Web</th>
+<th data-quarto-table-cell-role="th">No Record</th>
+<th data-quarto-table-cell-role="th">Unknown</th>
+<th data-quarto-table-cell-role="th">Wikimedia</th>
+<th data-quarto-table-cell-role="th">Wikipedia Link</th>
+<th data-quarto-table-cell-role="th">Wikipedia Other</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2021-07-01</td>
+<td>3079018876</td>
+<td>66824340</td>
+<td>1436272303</td>
+<td>149779</td>
+<td>125543119</td>
+<td>2255489317</td>
+<td>65494170</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2021-08-01</td>
+<td>3053078620</td>
+<td>69360537</td>
+<td>1421374549</td>
+<td>130745</td>
+<td>126638318</td>
+<td>2249276871</td>
+<td>63354813</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2021-09-01</td>
+<td>2954325919</td>
+<td>66275924</td>
+<td>1317654573</td>
+<td>193580</td>
+<td>119765805</td>
+<td>2045986483</td>
+<td>57496100</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">2021-10-01</td>
+<td>3018637196</td>
+<td>68711456</td>
+<td>1316391400</td>
+<td>349130</td>
+<td>121836833</td>
+<td>2080902700</td>
+<td>58488064</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2021-11-01</td>
+<td>2856159667</td>
+<td>67904845</td>
+<td>1254032762</td>
+<td>336090</td>
+<td>115326252</td>
+<td>1921539436</td>
+<td>52515893</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="aggregating-data-in-various-ways" class="level4">
+<h4 class="anchored" data-anchor-id="aggregating-data-in-various-ways">Aggregating data in various ways</h4>
+<p>The dataframes created below summarise different aspects of the data: - <code>agg_df</code>: total pageviews from all sources to each letter over full period - <code>agg_m_df</code>: total pageviews from each source to each letter (Wikipedia source articles disaggregated) over full period - <code>agg_mt_df</code>: total pageviews from all sources to each letter per month - <code>agg_t_df</code>: total pageviews from each source to each letter (Wikipedia source articles aggregated) over full period - <code>agg_tm_df</code>: total pageviews from each source to each letter (Wikipedia source articles aggregated) per month</p>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>agg_df <span class="op">=</span> dft.groupby(<span class="st">'target'</span>)[<span class="st">'n'</span>].<span class="bu">sum</span>().sort_values(ascending<span class="op">=</span><span class="va">False</span>).reset_index()</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>agg_m_df <span class="op">=</span> dft.groupby([<span class="st">'target'</span>, <span class="st">'source'</span>, <span class="st">'type'</span>])[<span class="st">'n'</span>].<span class="bu">sum</span>().sort_values(ascending<span class="op">=</span><span class="va">False</span>).reset_index()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>agg_mt_df <span class="op">=</span> dft.groupby([<span class="st">'target'</span>, <span class="st">'month'</span>])[<span class="st">'n'</span>].<span class="bu">sum</span>().sort_values(ascending<span class="op">=</span><span class="va">False</span>).reset_index()</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>agg_t_df <span class="op">=</span> dft.groupby([<span class="st">'target'</span>, <span class="st">'type2'</span>])[<span class="st">'n'</span>].<span class="bu">sum</span>().sort_values(ascending<span class="op">=</span><span class="va">False</span>).reset_index()</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>agg_tm_df <span class="op">=</span> dft.groupby([<span class="st">'target'</span>, <span class="st">'type2'</span>, <span class="st">'month'</span>])[<span class="st">'n'</span>].<span class="bu">sum</span>().sort_values(ascending<span class="op">=</span><span class="va">False</span>).reset_index()</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>display(agg_df.head()) <span class="co"># total pageviews from all sources</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>display(agg_m_df.head()) <span class="co"># total pageviews from each source (articles disaggregated)</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>display(agg_mt_df.head()) <span class="co"># total pageviews from each month</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>display(agg_t_df.head()) <span class="co"># total pageviews from each source (articles aggregated)</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>display(agg_tm_df.head()) <span class="co"># total pageviews from each source each month (articles aggregated)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">target</th>
+<th data-quarto-table-cell-role="th">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>A</td>
+<td>5063079</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>G</td>
+<td>3604129</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>L</td>
+<td>3259600</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>H</td>
+<td>2858547</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>Y</td>
+<td>2220332</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">target</th>
+<th data-quarto-table-cell-role="th">source</th>
+<th data-quarto-table-cell-role="th">type</th>
+<th data-quarto-table-cell-role="th">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>A</td>
+<td>other-empty</td>
+<td>external</td>
+<td>2923877</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>G</td>
+<td>other-empty</td>
+<td>external</td>
+<td>2255170</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>L</td>
+<td>other-empty</td>
+<td>external</td>
+<td>1775921</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>A</td>
+<td>other-search</td>
+<td>external</td>
+<td>1719295</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>H</td>
+<td>other-empty</td>
+<td>external</td>
+<td>1626018</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">target</th>
+<th data-quarto-table-cell-role="th">month</th>
+<th data-quarto-table-cell-role="th">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>G</td>
+<td>2023-05-01</td>
+<td>543458</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>G</td>
+<td>2023-06-01</td>
+<td>516054</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>A</td>
+<td>2023-06-01</td>
+<td>417423</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>A</td>
+<td>2023-05-01</td>
+<td>411836</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>A</td>
+<td>2023-03-01</td>
+<td>384302</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">target</th>
+<th data-quarto-table-cell-role="th">type2</th>
+<th data-quarto-table-cell-role="th">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>A</td>
+<td>No Record</td>
+<td>2923877</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>G</td>
+<td>No Record</td>
+<td>2255170</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>L</td>
+<td>No Record</td>
+<td>1775921</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>A</td>
+<td>Search Engines</td>
+<td>1719295</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>H</td>
+<td>No Record</td>
+<td>1626018</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">target</th>
+<th data-quarto-table-cell-role="th">type2</th>
+<th data-quarto-table-cell-role="th">month</th>
+<th data-quarto-table-cell-role="th">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>G</td>
+<td>Search Engines</td>
+<td>2023-05-01</td>
+<td>359876</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>G</td>
+<td>Search Engines</td>
+<td>2023-06-01</td>
+<td>348979</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>A</td>
+<td>No Record</td>
+<td>2023-03-01</td>
+<td>245137</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>A</td>
+<td>No Record</td>
+<td>2023-02-01</td>
+<td>241168</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>A</td>
+<td>Search Engines</td>
+<td>2023-06-01</td>
+<td>203479</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="investigating-page-views-over-time" class="level4">
+<h4 class="anchored" data-anchor-id="investigating-page-views-over-time">Investigating page views over time</h4>
+<p>Total page views towards the letter articles start increasing dramatically around June 2022, tripling in volume in 1 year!</p>
+<div class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>tpd <span class="op">=</span> dft.groupby(<span class="st">'month'</span>)[<span class="st">'n'</span>].<span class="bu">sum</span>()<span class="op">/</span><span class="dv">1000000</span> <span class="co"># group &amp; convert to millions</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>tpd.plot()</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Page Views towards all Wikipedia Articles about Letters of the Alphabet'</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Month'</span>)</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Monthly Page Views (millions)'</span>)</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>plt.savefig(<span class="st">'figures/total_pageviews.png'</span>, dpi<span class="op">=</span><span class="dv">300</span>, bbox_inches<span class="op">=</span><span class="st">'tight'</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="wikiletters_files/figure-html/cell-4-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="traffic-sources" class="level4">
+<h4 class="anchored" data-anchor-id="traffic-sources">Traffic sources</h4>
+<p>Sources with no recorded origin are primarily responsible for this increase in traffic, initially at least, with Search Engines also contributing significantly from Jan 2023.</p>
+<div class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># group, reshape, convert to thousands, sort cols by total</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>ttpd <span class="op">=</span> dft.groupby([<span class="st">'type2'</span>, <span class="st">'month'</span>])[<span class="st">'n'</span>].<span class="bu">sum</span>().unstack().T<span class="op">/</span><span class="dv">1000</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>ttpd <span class="op">=</span> ttpd[ttpd.<span class="bu">sum</span>().sort_values(ascending<span class="op">=</span><span class="va">False</span>).index].fillna(<span class="dv">0</span>)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># specify colours for each source (used for consistency between plots)</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>cmap <span class="op">=</span> cm.Dark2(np.linspace(<span class="dv">0</span>, <span class="dv">1</span>, <span class="dv">7</span>))</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>sources <span class="op">=</span> [<span class="st">'Search Engines'</span>, <span class="st">'Rest of the Web'</span>, <span class="st">'No Record'</span>, <span class="st">'Unknown'</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>           <span class="st">'Wikimedia'</span>, <span class="st">'Wikipedia Link'</span>, <span class="st">'Wikipedia Other'</span>]</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>source_colours <span class="op">=</span> {x: cmap[n] <span class="cf">for</span> n, x <span class="kw">in</span> <span class="bu">enumerate</span>(sources)}</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co"># plot</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> source <span class="kw">in</span> ttpd.columns:</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    ttpd[source].plot(color<span class="op">=</span>source_colours[source])</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Page Views towards all Wikipedia Articles about Letters of the Alphabet by Source'</span>)</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Month'</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Monthly Page Views (thousands)'</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>plt.yscale(<span class="st">'log'</span>)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>plt.legend(title<span class="op">=</span><span class="st">'Source'</span>, bbox_to_anchor<span class="op">=</span>(<span class="dv">1</span>, <span class="fl">0.75</span>))</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>plt.savefig(<span class="st">'figures/pageview_sources.png'</span>, dpi<span class="op">=</span><span class="dv">300</span>, bbox_inches<span class="op">=</span><span class="st">'tight'</span>)</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="wikiletters_files/figure-html/cell-5-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="page-view-targets" class="level4">
+<h4 class="anchored" data-anchor-id="page-view-targets">Page view targets</h4>
+<p>Different letters have different baseline page views. Lets look at the increase in page views above this baseline (calculated from first year monthly average).</p>
+<p>G, A, S, L, and H have the largest increases in page views, some letters have no notable increase at all.</p>
+<p>There are some strange dips across all letters in December 2022 and April 2023. I’m not sure what could be responsible for this?</p>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get average per letter over first period</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>mean_y1 <span class="op">=</span> agg_mt_df[agg_mt_df[<span class="st">'month'</span>]<span class="op">&lt;</span>split].groupby(<span class="st">'target'</span>)[<span class="st">'n'</span>].mean()</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># get excess views per letter per month, convert to millions</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>xpd <span class="op">=</span> (dft.groupby([<span class="st">'target'</span>, <span class="st">'month'</span>])[<span class="st">'n'</span>].<span class="bu">sum</span>() <span class="op">-</span> mean_y1</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>       ).unstack().T<span class="op">/</span><span class="dv">1000000</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># plot</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>xpd.plot(legend<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>texts <span class="op">=</span> []</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k, v <span class="kw">in</span> xpd.iloc[<span class="op">-</span><span class="dv">1</span>].sort_values().to_dict().items(): <span class="co"># add letter labels</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    texts.append(plt.text(xpd.index[<span class="op">-</span><span class="dv">1</span>], v, k, fontsize<span class="op">=</span><span class="dv">8</span>))</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Excess Page Views towards Wikipedia Articles about Letters of the Alphabet'</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Month'</span>)</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Excess Monthly Page Views (millions)'</span>)</span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>plt.xlim(xpd.index[<span class="dv">0</span>], pd.to_datetime(endm) <span class="op">+</span> pd.DateOffset(months<span class="op">=</span><span class="dv">1</span>))</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="co"># jitter the letter labels</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>adjust_text(texts, arrowprops<span class="op">=</span><span class="bu">dict</span>(arrowstyle<span class="op">=</span><span class="st">"-"</span>), avoid_self<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>plt.savefig(<span class="st">'figures/az_excess_views.png'</span>, dpi<span class="op">=</span><span class="dv">300</span>, bbox_inches<span class="op">=</span><span class="st">'tight'</span>)</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="wikiletters_files/figure-html/cell-6-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+<p>Considering pageviews relative to their first year average is a similar story. Page views for the letter G increased 800% over the course of the last year, most letters increased somewhat, but some not at all.</p>
+<div class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get scaled views per letter per month, compared to first period average</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>rpd <span class="op">=</span> (dft.groupby([<span class="st">'target'</span>, <span class="st">'month'</span>])[<span class="st">'n'</span>].<span class="bu">sum</span>() <span class="op">/</span> mean_y1).unstack().T<span class="op">*</span><span class="dv">100</span> <span class="op">-</span> <span class="dv">100</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># plot</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>rpd.plot(legend<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>texts<span class="op">=</span>[]</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k, v <span class="kw">in</span> rpd.iloc[<span class="op">-</span><span class="dv">1</span>].sort_values().to_dict().items(): <span class="co"># add letter labels</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    texts.append(plt.text(rpd.index[<span class="op">-</span><span class="dv">1</span>], v, k, fontsize<span class="op">=</span><span class="dv">8</span>))</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Relative Change in Page Views towards Wikipedia Articles about Letters of the Alphabet'</span>)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Month'</span>)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Relative Change in Page Views (%)'</span>)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>plt.xlim(rpd.index[<span class="dv">0</span>], pd.to_datetime(endm) <span class="op">+</span> pd.DateOffset(months<span class="op">=</span><span class="dv">1</span>))</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co"># jitter the letter labels</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>adjust_text(texts, arrowprops<span class="op">=</span><span class="bu">dict</span>(arrowstyle<span class="op">=</span><span class="st">"-"</span>), avoid_self<span class="op">=</span><span class="va">False</span>)</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>plt.savefig(<span class="st">'figures/az_relative_views.png'</span>, dpi<span class="op">=</span><span class="dv">300</span>, bbox_inches<span class="op">=</span><span class="st">'tight'</span>)</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="wikiletters_files/figure-html/cell-7-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="visualising-the-traffic-by-source-and-target" class="level4">
+<h4 class="anchored" data-anchor-id="visualising-the-traffic-by-source-and-target">Visualising the traffic by source and target</h4>
+<p>Need to create a clean edgelist for where clicks come from, which article they go to, and how many clicks there are. Do this for year 1 of data and year 2 of data.</p>
+<div class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># create edgelists for navigation networks</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>el <span class="op">=</span> agg_tm_df.rename(columns<span class="op">=</span>{<span class="st">'type2'</span>: <span class="st">'source'</span>, <span class="st">'n'</span>:<span class="st">'weight'</span>})</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>el_y1 <span class="op">=</span> el[el[<span class="st">'month'</span>]<span class="op">&lt;</span>split].groupby([<span class="st">'source'</span>, <span class="st">'target'</span>])[<span class="st">'weight'</span>].<span class="bu">sum</span>().reset_index()</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>el_y2 <span class="op">=</span> el[el[<span class="st">'month'</span>]<span class="op">&gt;=</span>split].groupby([<span class="st">'source'</span>, <span class="st">'target'</span>])[<span class="st">'weight'</span>].<span class="bu">sum</span>().reset_index()</span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>display(el_y1.head())</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>display(el_y2.head())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">source</th>
+<th data-quarto-table-cell-role="th">target</th>
+<th data-quarto-table-cell-role="th">weight</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>No Record</td>
+<td>A</td>
+<td>726999</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>No Record</td>
+<td>B</td>
+<td>183019</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>No Record</td>
+<td>C</td>
+<td>159758</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>No Record</td>
+<td>D</td>
+<td>101193</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>No Record</td>
+<td>E</td>
+<td>185806</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">source</th>
+<th data-quarto-table-cell-role="th">target</th>
+<th data-quarto-table-cell-role="th">weight</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>No Record</td>
+<td>A</td>
+<td>2196878</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>No Record</td>
+<td>B</td>
+<td>556402</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>No Record</td>
+<td>C</td>
+<td>442075</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>No Record</td>
+<td>D</td>
+<td>163337</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>No Record</td>
+<td>E</td>
+<td>479767</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Plotting this data, we see the large increase in page views in year 2 vs year 1, how this is primarily driven by ‘No Record’ and ‘Search Engines’, plus more detail on how this varies by letter.</p>
+<div class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># plot clickstream data for each letter</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>plot_az_fig(el_y1, <span class="st">' (July 2021 - June 2022)'</span>)</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>plot_az_fig(el_y2, <span class="st">' (July 2022 - June 2023)'</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="wikiletters_files/figure-html/cell-9-output-1.png" class="img-fluid"></p>
+</div>
+<div class="cell-output cell-output-display">
+<p><img src="wikiletters_files/figure-html/cell-9-output-2.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="more-edge-details" class="level4">
+<h4 class="anchored" data-anchor-id="more-edge-details">More edge details</h4>
+<ol type="1">
+<li>Comparing traffic by source in year 1 vs year 2.</li>
+<li>Finding the edges with the largest increase in traffic.</li>
+<li>Within Wikipedia, find the edges with the highest traffic (links in articles clicked the most.)</li>
+</ol>
+<div class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 1. absolute and relative change in views by source, y2 vs y1</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>display(el_y2.groupby(<span class="st">'source'</span>)[<span class="st">'weight'</span>].<span class="bu">sum</span>() <span class="op">-</span> el_y1.groupby(<span class="st">'source'</span>)[<span class="st">'weight'</span>].<span class="bu">sum</span>())</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>display(el_y2.groupby(<span class="st">'source'</span>)[<span class="st">'weight'</span>].<span class="bu">sum</span>() <span class="op">/</span> el_y1.groupby(<span class="st">'source'</span>)[<span class="st">'weight'</span>].<span class="bu">sum</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>source
+No Record          10672221
+Rest of the Web      -31901
+Search Engines      4485797
+Unknown                6951
+Wikimedia             66417
+Wikipedia Link        39974
+Wikipedia Other       90261
+Name: weight, dtype: int64</code></pre>
+</div>
+<div class="cell-output cell-output-display">
+<pre><code>source
+No Record          2.439656
+Rest of the Web    0.796787
+Search Engines     1.985913
+Unknown            3.543359
+Wikimedia          1.074234
+Wikipedia Link     1.137810
+Wikipedia Other    1.416229
+Name: weight, dtype: float64</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 2. show edges with the largest increase in views y2 vs y1</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>display((el_y2.groupby([<span class="st">'source'</span>, <span class="st">'target'</span>])[<span class="st">'weight'</span>].<span class="bu">sum</span>().sub(</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>    el_y1.groupby([<span class="st">'source'</span>, <span class="st">'target'</span>])[<span class="st">'weight'</span>].<span class="bu">sum</span>(), fill_value<span class="op">=</span><span class="dv">0</span>).sort_values(ascending<span class="op">=</span><span class="va">False</span>)).head())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<pre><code>source          target
+No Record       A         1469879.0
+                G         1346226.0
+Search Engines  G          903355.0
+No Record       S          894121.0
+                H          845744.0
+Name: weight, dtype: float64</code></pre>
+</div>
+</div>
+<div class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># 3. show top wikipedia article sources in each periods</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>dfl <span class="op">=</span> dft[dft[<span class="st">'type'</span>] <span class="op">==</span> <span class="st">'link'</span>]</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>display(dfl.groupby([<span class="st">'source'</span>, <span class="st">'target'</span>])[<span class="st">'n'</span>].<span class="bu">sum</span>().sort_values(ascending<span class="op">=</span><span class="va">False</span>).head().reset_index())</span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>display(dfl[dfl[<span class="st">'month'</span>]<span class="op">&lt;</span>split].groupby([<span class="st">'source'</span>, <span class="st">'target'</span>])[<span class="st">'n'</span>].<span class="bu">sum</span>().sort_values(ascending<span class="op">=</span><span class="va">False</span>).head().reset_index())</span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>display(dfl[dfl[<span class="st">'month'</span>]<span class="op">&gt;=</span>split].groupby([<span class="st">'source'</span>, <span class="st">'target'</span>])[<span class="st">'n'</span>].<span class="bu">sum</span>().sort_values(ascending<span class="op">=</span><span class="va">False</span>).head().reset_index())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">source</th>
+<th data-quarto-table-cell-role="th">target</th>
+<th data-quarto-table-cell-role="th">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>Freemasonry</td>
+<td>G</td>
+<td>15385</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>English_alphabet</td>
+<td>A</td>
+<td>14308</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>Roman_numerals</td>
+<td>I</td>
+<td>9236</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>C_(programming_language)</td>
+<td>C</td>
+<td>8414</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>Roman_numerals</td>
+<td>M</td>
+<td>7621</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">source</th>
+<th data-quarto-table-cell-role="th">target</th>
+<th data-quarto-table-cell-role="th">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>English_alphabet</td>
+<td>A</td>
+<td>7421</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>Freemasonry</td>
+<td>G</td>
+<td>7044</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>Roman_numerals</td>
+<td>I</td>
+<td>4717</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>C_(programming_language)</td>
+<td>C</td>
+<td>4347</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>Shibboleth</td>
+<td>H</td>
+<td>4038</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+
+
+<table class="dataframe table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">source</th>
+<th data-quarto-table-cell-role="th">target</th>
+<th data-quarto-table-cell-role="th">n</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>Freemasonry</td>
+<td>G</td>
+<td>8341</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>English_alphabet</td>
+<td>A</td>
+<td>6887</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>English_alphabet</td>
+<td>I</td>
+<td>5069</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>English_alphabet</td>
+<td>N</td>
+<td>4610</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>Roman_numerals</td>
+<td>I</td>
+<td>4519</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+</section>
+<section id="internal-wikipedia-link-plot" class="level4">
+<h4 class="anchored" data-anchor-id="internal-wikipedia-link-plot">Internal Wikipedia link plot</h4>
+<p>A slightly simpler / uglier / less informative version of the above plot, restricted to links between Wikipedia articles.</p>
+<p>The alphabet page features strongly, as well as Roman numerals, and the Freemasonry -&gt; G link. Probably a conspiracy.</p>
+<div class="cell" data-execution_count="12">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># considering the top 100 links from Wikipedia articles to the letter articles:</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>elw <span class="op">=</span> dfl.rename(columns<span class="op">=</span>{<span class="st">'n'</span>:<span class="st">'weight'</span>}).groupby([<span class="st">'source'</span>, <span class="st">'target'</span>])[<span class="st">'weight'</span>].<span class="bu">sum</span>().sort_values(ascending<span class="op">=</span><span class="va">False</span>).reset_index().iloc[:<span class="dv">100</span>]</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>az_wikilinks_fig(elw)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="wikiletters_files/figure-html/cell-13-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+<section id="comparison-with-wider-patterns" class="level4">
+<h4 class="anchored" data-anchor-id="comparison-with-wider-patterns">Comparison with wider patterns</h4>
+<p>The increase in traffic towards letter articles is not reflected in wider access patterns towards all articles. What other (groups of) articles might be affected? Why? And where is this traffic really coming from?</p>
+<div class="cell" data-execution_count="13">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># compare page views from different sources across all of English Wikipedia</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>gp <span class="op">=</span> dfg<span class="op">/</span><span class="dv">1000000000</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>gp <span class="op">=</span> gp[gp.<span class="bu">sum</span>().sort_values(ascending<span class="op">=</span><span class="va">False</span>).index] <span class="co"># sort plots &amp; legend</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> source <span class="kw">in</span> gp.columns: <span class="co"># plot source, consistent colours</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>    gp[source].plot(color<span class="op">=</span>source_colours[source])</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Page Views towards all English Wikipedia Pages by Source'</span>)</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Page Views (billions)'</span>)</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Month'</span>)</span>
+<span id="cb16-11"><a href="#cb16-11" aria-hidden="true" tabindex="-1"></a>plt.legend(title<span class="op">=</span><span class="st">'Source'</span>, bbox_to_anchor<span class="op">=</span>(<span class="dv">1</span>, <span class="fl">0.75</span>))</span>
+<span id="cb16-12"><a href="#cb16-12" aria-hidden="true" tabindex="-1"></a>plt.savefig(<span class="st">'figures/allwiki_pageview_sources.png'</span>, dpi<span class="op">=</span><span class="dv">300</span>, bbox_inches<span class="op">=</span><span class="st">'tight'</span>)</span>
+<span id="cb16-13"><a href="#cb16-13" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<p><img src="wikiletters_files/figure-html/cell-14-output-1.png" class="img-fluid"></p>
+</div>
+</div>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>
